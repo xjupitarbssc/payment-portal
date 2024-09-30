@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .animate__animated {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+        }
+
+        .animate__fadeInUp {
+            animation-name: fadeInUp;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 100%, 0);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex justify-center items-center h-screen">
+        <div class="max-w-md w-full p-4 bg-white rounded-lg shadow-md">
+            <h2 class="text-lg font-bold mb-4">Scan QR Code to Pay</h2>
+            <video id="video" width="640" height="480" class="mb-4"></video>
+            <canvas id="canvas" width="640" height="480" class="hidden"></canvas>
+            <div id="message" class="text-lg font-bold text-green-500 hidden"></div>
+        </div>
+    </div>
+
+    <script src="https://raw.githubusercontent.com/serratus/quaggaJS/master/dist/quagga.min.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const messageElement = document.getElementById('message');
+
+        // Request access to the user's webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(error => {
+                console.error('Error accessing webcam:', error);
+            });
+
+        // Set up QR code scanner
+        const qrScanner = new Instascan.Scanner({
+            video: video,
+            scanPeriod: 5,
+            async onScan(result) {
+                const scannedData = result.content;
+                if (scannedData === 'r96Ickw7acRTxeiS6W4183923qehoxO7N8j2JpQ9sXp14F3DM56hV2EpAh09l1i483lclf8DYT0dRIIJ5g61DS235In6Wg20M21G') {
+                    messageElement.textContent = 'You have paid for your order!';
+                    messageElement.classList.remove('hidden');
+                    messageElement.classList.add('animate__animated', 'animate__fadeInUp');
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
+                }
+            }
+        });
+
+        // Start scanning
+        qrScanner.addListener('scan', () => {
+            qrScanner.scan();
+        });
+    </script>
+</body>
+</html>
